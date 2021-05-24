@@ -1,6 +1,6 @@
 package br.com.stoom.demo.exception;
 
-public class AddressNotFound extends  Exception {
+public class AddressNotFound extends  RuntimeException  {
 
 
     public AddressNotFound() {

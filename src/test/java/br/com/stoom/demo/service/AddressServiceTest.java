@@ -7,15 +7,27 @@ import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.*;
+
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+
+import java.util.List;
+import java.util.Optional;
 
 
 @SpringBootTest
 public class AddressServiceTest {
 
-    @Autowired
+    @Mock
     private AddressRepository repository;
+
+    @InjectMocks
+    private AddressService addressService;
     private Address address;
 
     @BeforeEach
@@ -30,30 +42,33 @@ public class AddressServiceTest {
         address.setCity("Florianópolis ");
     }
 
-    @AfterEach
-    void cleanUp() {
-        repository.deleteAll();
+
+    @Test
+    public void saveMustReturnNotNullTest() {
+        when(repository.save(any())).thenReturn(this.address);
+        Address address = addressService.save(this.address);
+        Assert.assertNotNull(address);
     }
 
     @Test
-    public void saveAndFindMustReturnNotEmptyTest() {
-        Address address = repository.save(this.address);
-        Assert.assertFalse(repository.findById(address.getId()).isEmpty());
+    public void findMustReturnNotNullTest() {
+        when(repository.findById(any())).thenReturn(Optional.of(this.address));
+        Address address = addressService.findById(this.address.getId());
+        Assert.assertNotNull(address);
     }
 
     @Test
-    public void deleteAndFindMustReturnEmptyTest() {
-        Address address = repository.save(this.address);
-        Assert.assertNotNull(repository.findById(address.getId()));
-        repository.deleteById(address.getId());
-        Assert.assertTrue(repository.findById(address.getId()).isEmpty());
+    public void deleteMustReturnOneInvocationTest(){
+        doNothing().when(repository).deleteById(any());
+        addressService.delete(this.address.getId());
+        verify(repository, times(1)).deleteById(this.address.getId());
     }
 
     @Test
-    public void findAllTest() {
-        Address address = repository.save(this.address);
-        Assert.assertNotNull(repository.findById(address.getId()));
-        Assert.assertTrue(repository.findAll().iterator().hasNext());
+    public void findAllMustReturnTrueTest() {
+        when(repository.findAll()).thenReturn(List.of(this.address));
+        Iterable<Address> list = addressService.findAll();
+        Assert.assertTrue(list.iterator().hasNext());
     }
 
 }

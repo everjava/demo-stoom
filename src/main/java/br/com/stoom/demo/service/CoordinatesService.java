@@ -5,6 +5,7 @@ import br.com.stoom.demo.client.dto.EndpointParameter;
 import br.com.stoom.demo.client.dto.Result;
 import br.com.stoom.demo.domain.Address;
 import br.com.stoom.demo.exception.CoordinateNotFound;
+import br.com.stoom.demo.exception.CoordinatesException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,31 +30,28 @@ public class CoordinatesService {
     }
 
     public void checkCoordinates(Address address) {
-        if (isLatitudeLongitudeNotExists(address)) {
-            callApi(address).ifPresent(m -> {
-                address.setLongitude(m.get("lng"));
-                address.setLatitude(m.get("lat"));
-            });
+        try {
+            if (isLatitudeLongitudeNotExists(address)) {
+                callApi(address).ifPresent(m -> {
+                    address.setLongitude(m.get("lng"));
+                    address.setLatitude(m.get("lat"));
+                });
+            }
+        } catch (CoordinatesException e) {
+            throw e;
         }
     }
 
     Optional<Map<String, String>> callApi(Address address) {
         StringBuilder addressAttributes = this.getAddressAttributes(address);
-        try {
-            EndpointParameter endpointParameter = EndpointParameter.builder()
-                    .address(addressAttributes.toString())
-                    .key(apiKey)
-                    .build();
-
-            List<Result> results = googleClient.callApi(endpointParameter)
-                    .orElseThrow(CoordinateNotFound::new)
-                    .getResults();
-
-            return Optional.of(this.getCoordinates(results));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
+        EndpointParameter endpointParameter = EndpointParameter.builder()
+                .address(addressAttributes.toString())
+                .key(apiKey)
+                .build();
+        List<Result> results = googleClient.callApi(endpointParameter)
+                .orElseThrow(CoordinateNotFound::new)
+                .getResults();
+        return Optional.of(this.getCoordinates(results));
     }
 
     Map<String, String> getCoordinates(List<Result> results) {

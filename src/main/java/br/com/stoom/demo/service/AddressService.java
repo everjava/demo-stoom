@@ -2,6 +2,7 @@ package br.com.stoom.demo.service;
 
 import br.com.stoom.demo.client.dto.GoogleResult;
 import br.com.stoom.demo.domain.Address;
+import br.com.stoom.demo.exception.AddressNotFound;
 import br.com.stoom.demo.repository.AddressRepository;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +25,8 @@ public class AddressService {
         repository.deleteById(id);
     }
 
-    public Optional<Address> findById(String id) {
-        return repository.findById(id);
+    public Address findById(String id) {
+        return repository.findById(id).orElseThrow(() -> new AddressNotFound(id));
     }
 
     public Iterable<Address> findAll() {

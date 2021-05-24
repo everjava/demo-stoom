@@ -30,36 +30,24 @@ public class AddressController {
 
     @PostMapping()
     public ResponseEntity<?> save(@Valid @RequestBody Address address, BindingResult result) {
-        try {
-            ResponseEntity<?> errorMap = mapValidationErrorService.MapValidationService(result);
-            if (errorMap != null) return errorMap;
+        ResponseEntity<?> errorMap = mapValidationErrorService.MapValidationService(result);
+        if (errorMap != null) return errorMap;
 
-            coordinatesService.checkCoordinates(address);
-            service.save(address);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        coordinatesService.checkCoordinates(address);
+        service.save(address);
         return new ResponseEntity<>(address, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {
-        try {
-            service.delete(id);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        service.findById(id);
+        service.delete(id);
         return new ResponseEntity<>("Address com ID: '" + id + "' foi deletado", HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> findSById(@PathVariable String id) {
-        Optional<Address> address;
-        try {
-            address = service.findById(id);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        Address address = service.findById(id);
         return new ResponseEntity<>(address, HttpStatus.OK);
     }
 
@@ -71,20 +59,14 @@ public class AddressController {
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable(value = "id") String id, @Valid @RequestBody Address address,
                                     BindingResult result) {
-        try {
-            if (service.findById(id).isEmpty()) {
-                return new ResponseEntity<>("id = " + id, HttpStatus.NOT_FOUND);
-            }
 
-            ResponseEntity<?> errorMap = mapValidationErrorService.MapValidationService(result);
-            if (errorMap != null) return errorMap;
+        service.findById(id);
+        ResponseEntity<?> errorMap = mapValidationErrorService.MapValidationService(result);
+        if (errorMap != null) return errorMap;
 
-            address.setId(id);
-            coordinatesService.checkCoordinates(address);
-            service.save(address);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        address.setId(id);
+        coordinatesService.checkCoordinates(address);
+        service.save(address);
         return new ResponseEntity<>(address, HttpStatus.OK);
     }
 

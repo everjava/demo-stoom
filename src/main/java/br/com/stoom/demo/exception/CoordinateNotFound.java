@@ -1,6 +1,6 @@
 package br.com.stoom.demo.exception;
 
-public class CoordinateNotFound extends Exception {
+public class CoordinateNotFound extends RuntimeException {
 
     public CoordinateNotFound() {
     }
