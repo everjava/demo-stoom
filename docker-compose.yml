@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  demo-stoom:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    restart: always
+    depends_on:
+      - mongo-database
+
+  mongo-database:
+    image: mongo:4
+    container_name: "mongo-database"
+    ports:
+      - 27017:27017
